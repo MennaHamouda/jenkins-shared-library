@@ -4,6 +4,6 @@ def call(){
 
     Docker docker = new Docker(this)
 
-    docker.buildImage("${USER}/weather-app:latest")
+    docker.buildImage("mennatallah2001/weather-app:latest")
 
 }
