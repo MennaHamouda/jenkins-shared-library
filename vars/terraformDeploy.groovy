@@ -13,8 +13,18 @@ def call() {
     ]) {
 
         terraform.init("terraform")
+
         terraform.validate("terraform")
+
         terraform.plan("terraform")
+        
+        def outputs = terraform.output("terraform")
+
+        steps.writeFile(
+        file: "terraform-output.json",
+        text: outputs
+        )
+
         terraform.apply("terraform")
 
     }
