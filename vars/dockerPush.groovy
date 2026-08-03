@@ -12,7 +12,7 @@ def call(){
 
         sh "echo \$PASS | docker login -u \$USER --password-stdin"
 
-        docker.pushImage("weather-app:latest")
+        docker.pushImage("${USER}/weather-app:latest")
 
     }
 
