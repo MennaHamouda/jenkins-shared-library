@@ -1,3 +1,4 @@
+import org.devops.Config
 import org.devops.Docker
 
 def call(){
@@ -12,8 +13,7 @@ def call(){
 
         sh "echo \$PASS | docker login -u \$USER --password-stdin"
 
-        docker.pushImage("${USER}/weather-app:latest")
-
+        docker.pushImage("${Config.USERNAME}/weather-app:latest")
     }
 
 }
