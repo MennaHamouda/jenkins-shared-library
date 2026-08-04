@@ -53,12 +53,5 @@ class Terraform implements Serializable {
 
     }
 
-   def destroy(String directory){
-
-    steps.dir(directory){
-        steps.sh "terraform destroy -auto-approve -var-file=terraform.tfvars"
-    }
-
-}
    
 }
