@@ -9,14 +9,11 @@ class Ansible implements Serializable {
     }
 
     def configure() {
-
-        steps.sh """
-        ansible-playbook \
-          -i ansible/inventory/inventory.ini \
-          --private-key ${sshKey} \
-          ansible/playbook.yml
-        """
-
+        steps.sh '''
+            ansible-playbook \
+              -i ansible/inventory/inventory.ini \
+              --private-key "$SSH_KEY" \
+              ansible/playbook.yml
+        '''
     }
-
 }
