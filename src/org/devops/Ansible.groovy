@@ -10,6 +10,10 @@ class Ansible implements Serializable {
 
     def configure() {
         steps.sh '''
+        
+
+            chmod 600 "$SSH_KEY"
+
             ansible-playbook \
               -i ansible/inventory/inventory.ini \
               --private-key "$SSH_KEY" \
