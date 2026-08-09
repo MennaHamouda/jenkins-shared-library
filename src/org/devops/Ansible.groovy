@@ -12,7 +12,7 @@ class Ansible implements Serializable {
         steps.sh '''
         
 
-            chmod 600 "$SSH_KEY"
+            chmod 400 "$SSH_KEY"
 
             ansible-playbook \
               -i ansible/inventory/inventory.ini \
