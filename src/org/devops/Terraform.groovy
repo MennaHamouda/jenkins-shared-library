@@ -32,10 +32,21 @@ class Terraform implements Serializable {
 
     }
 
+
+
+    def apply(String directory){
+
+        steps.dir(directory){
+            steps.sh "terraform apply -var-file=terraform.tfvars tfplan"
+        }
+
+    }
+
+
     def output(String directory){
 
-    steps.dir(directory){
-
+        steps.dir(directory){
+ 
         return steps.sh(
             script: "terraform output -json",
             returnStdout: true
@@ -43,15 +54,7 @@ class Terraform implements Serializable {
 
     }
 
-}
-
-    def apply(String directory){
-
-        steps.dir(directory){
-            steps.sh "terraform apply -var-file=terraform.tfvars -auto-approve tfplan"
-        }
-
-    }
+} 
 
    
 }
