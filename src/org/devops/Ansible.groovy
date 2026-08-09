@@ -8,7 +8,7 @@ class Ansible implements Serializable {
         this.steps = steps
     }
 
-    def configure(String sshKey) {
+    def configure() {
 
         steps.sh """
         ansible-playbook \

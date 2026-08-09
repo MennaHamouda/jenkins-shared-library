@@ -8,7 +8,7 @@ withCredentials([
     file(credentialsId: 'weather-key', variable: 'SSH_KEY')
 ]) {
 
-    ansible.configure(env.SSH_KEY)
+    ansible.configure()
 
 }
 }
