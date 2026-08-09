@@ -12,7 +12,7 @@ class Ansible implements Serializable {
 
         steps.sh """
         ansible-playbook \
-          -i ansible/inventory.ini \
+          -i ansible/inventory/inventory.ini \
           --private-key ${sshKey} \
           ansible/playbook.yml
         """
