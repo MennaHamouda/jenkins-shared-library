@@ -11,7 +11,12 @@ class Terraform implements Serializable {
     def init(String directory){
 
         steps.dir(directory){
-            steps.sh "terraform init"
+            steps.sh """
+                terraform init \
+                -migrate-state \
+                -force-copy \
+                -input=false
+            """
         }
 
     }
@@ -32,8 +37,6 @@ class Terraform implements Serializable {
 
     }
 
-
-
     def apply(String directory){
 
         steps.dir(directory){
@@ -42,19 +45,4 @@ class Terraform implements Serializable {
 
     }
 
-
-    def output(String directory){
-
-        steps.dir(directory){
- 
-        return steps.sh(
-            script: "terraform output -json",
-            returnStdout: true
-        ).trim()
-
-    }
-
-} 
-
-   
 }
