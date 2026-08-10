@@ -12,12 +12,12 @@ class Ansible implements Serializable {
         steps.sh '''
         
 
-            chmod 400 "$SSH_KEY"
+            chmod 400 terraform/weather-key.pem
 
             ansible-playbook \
-              -i ansible/inventory/inventory.ini \
-              --private-key "$SSH_KEY" \
-              ansible/playbook.yml
+                -i ansible/inventory/inventory.ini \
+                --private-key terraform/weather-key.pem \
+                ansible/playbook.yml
         '''
     }
 }
