@@ -41,13 +41,5 @@ class Terraform implements Serializable {
         }
     }
 
-    def output(String directory) {
 
-        return steps.dir(directory) {
-            return steps.sh(
-                script: "terraform output -json",
-                returnStdout: true
-            ).trim()
-        }
-    }
 }

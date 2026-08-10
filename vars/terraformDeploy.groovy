@@ -1,4 +1,3 @@
-
 import org.devops.Terraform
 
 def call() {
@@ -14,20 +13,9 @@ def call() {
     ]) {
 
         terraform.init("terraform")
-
         terraform.validate("terraform")
-
         terraform.plan("terraform")
-
         terraform.apply("terraform")
-
-        def outputs = terraform.output("terraform")
-
-        writeFile(
-            file: "terraform-output.json",
-            text: outputs
-        )
-
     }
 }
 
