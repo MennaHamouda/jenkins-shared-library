@@ -4,13 +4,13 @@ class Terraform implements Serializable {
 
     def steps
 
-    Terraform(steps){
+    Terraform(steps) {
         this.steps = steps
     }
 
-    def init(String directory){
+    def init(String directory) {
 
-        steps.dir(directory){
+        steps.dir(directory) {
             steps.sh """
                 terraform init \
                 -migrate-state \
@@ -18,31 +18,36 @@ class Terraform implements Serializable {
                 -input=false
             """
         }
-
     }
 
-    def validate(String directory){
+    def validate(String directory) {
 
-        steps.dir(directory){
+        steps.dir(directory) {
             steps.sh "terraform validate"
         }
-
     }
 
-    def plan(String directory){
+    def plan(String directory) {
 
-        steps.dir(directory){
+        steps.dir(directory) {
             steps.sh "terraform plan -var-file=terraform.tfvars -out=tfplan"
         }
-
     }
 
-    def apply(String directory){
+    def apply(String directory) {
 
-        steps.dir(directory){
+        steps.dir(directory) {
             steps.sh "terraform apply -var-file=terraform.tfvars tfplan"
         }
-
     }
 
+    def output(String directory) {
+
+        return steps.dir(directory) {
+            return steps.sh(
+                script: "terraform output -json",
+                returnStdout: true
+            ).trim()
+        }
+    }
 }
