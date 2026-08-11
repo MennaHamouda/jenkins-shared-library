@@ -16,6 +16,7 @@ def call() {
         terraform.validate("terraform")
         terraform.plan("terraform")
         terraform.apply("terraform")
+        terraform.archive("ansible/inventory")
     }
 }
 

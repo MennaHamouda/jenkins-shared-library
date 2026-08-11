@@ -40,6 +40,18 @@ class Terraform implements Serializable {
             steps.sh "terraform apply -var-file=terraform.tfvars tfplan"
         }
     }
+ 
+ 
+def archive(String directory) {
+    steps.dir(directory) {
+        steps.sh 'echo "Archiving Ansible inventory for downstream consumption..."'
+        steps.archiveArtifacts(
+            artifacts: 'inventory.ini',
+            fingerprint: true,
+            allowEmptyArchive: false
+        )
+    }
+}
 
 
 }
