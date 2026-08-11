@@ -69,7 +69,7 @@ class Kubernetes implements Serializable {
 
                 echo ""
                 echo "=================================================================="
-                echo "🚀 APPLICATION DEPLOYED SUCCESSFULLY"
+                echo " APPLICATION DEPLOYED SUCCESSFULLY"
                 echo "Environment : ${environment}"
                 echo "Application URL: http://\${INGRESS_HOST}"
                 echo "Bastion IP     : ${bastionIp}"
