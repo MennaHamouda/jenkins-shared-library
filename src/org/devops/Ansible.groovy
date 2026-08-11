@@ -8,6 +8,17 @@ class Ansible implements Serializable {
         this.steps = steps
     }
 
+    def fetchArtifact(String projectName, String targetDir = 'ansible/inventory') {
+        steps.sh "echo 'Fetching archived inventory from upstream job: ${projectName}...'"
+        steps.copyArtifacts(
+            projectName: projectName,
+            selector: steps.lastSuccessful(),
+            filter: 'inventory.ini',
+            target: targetDir,
+            flatten: true
+        )
+    }
+
     def configure() {
         steps.sh '''
             mkdir -p "$HOME/.ssh"

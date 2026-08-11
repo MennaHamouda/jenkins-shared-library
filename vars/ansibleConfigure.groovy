@@ -6,6 +6,9 @@ def call() {
     withCredentials([
         file(credentialsId: 'ansible-key', variable: 'SSH_KEY')
     ]) {
+        
+        ansible.fetchArtifact('weather-app/infrastructure')
         ansible.configure()
+
     }
 }
