@@ -33,14 +33,20 @@ class Kubernetes implements Serializable {
 
         return [bastionIp: bastionIp, masterIp: masterIp]
     }
-
-    def deploy(String environment, String bastionIp, String masterIp) {
+        def deploy(String environment, String bastionIp, String masterIp) {
         steps.withCredentials([steps.file(credentialsId: 'ansible-key', variable: 'SSH_KEY')]) {
 
             steps.sh """
                 chmod 400 "\$SSH_KEY"
 
-                ssh -f -N -L 6443:${masterIp}:6443 -o StrictHostKeyChecking=no -i "\$SSH_KEY" ubuntu@${bastionIp}
+                # Kill any stale SSH tunnels on local port 6443
+                pkill -f '6443:' || true
+
+                # Tunnel directly to localhost on the Master host via ProxyCommand
+                ssh -f -N -L 6443:127.0.0.1:6443 \
+                    -o StrictHostKeyChecking=no \
+                    -o ProxyCommand="ssh -o StrictHostKeyChecking=no -i \"\$SSH_KEY\" -W %h:%p ubuntu@${bastionIp}" \
+                    -i "\$SSH_KEY" ubuntu@${masterIp}
 
                 ssh -o StrictHostKeyChecking=no -i "\$SSH_KEY" \
                     -o ProxyCommand="ssh -o StrictHostKeyChecking=no -i \"\$SSH_KEY\" -W %h:%p ubuntu@${bastionIp}" \
@@ -57,10 +63,11 @@ class Kubernetes implements Serializable {
                 \$KUBECTL get pods -n ${environment}
 
                 rm -f kubeconfig.tmp
-                pkill -f 'ssh -f -N -L 6443:${masterIp}' || true
+                pkill -f '6443:' || true
             """
 
         }
     }
+
 
 }
