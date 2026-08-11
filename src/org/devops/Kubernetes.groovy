@@ -65,7 +65,7 @@ class Kubernetes implements Serializable {
                 \$KUBECTL apply -k manifest-kustomize/overlays/${environment}
                 \$KUBECTL get pods -n ${environment}
 
-                INGRESS_HOST=\$($KUBECTL get ingress -n ${environment} -o jsonpath='{.items[0].spec.rules[0].host}' 2>/dev/null || echo "dev.weather-app.example.com")
+                INGRESS_HOST=\$(\$KUBECTL get ingress -n ${environment} -o jsonpath='{.items[0].spec.rules[0].host}' 2>/dev/null || echo "dev.weather-app.example.com")
 
                 echo ""
                 echo "=================================================================="
