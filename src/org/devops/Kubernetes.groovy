@@ -58,6 +58,9 @@ class Kubernetes implements Serializable {
                 export KUBECONFIG=kubeconfig.tmp
                 KUBECTL="kubectl --server=https://127.0.0.1:6443 --insecure-skip-tls-verify"
 
+                # Clean up legacy ingress/namespace to prevent host conflicts
+                \$KUBECTL delete ingress weather-app-ingress -n weather-app --ignore-not-found || true
+
                 \$KUBECTL diff -k manifest-kustomize/overlays/${environment} || true
                 \$KUBECTL apply -k manifest-kustomize/overlays/${environment}
                 \$KUBECTL get pods -n ${environment}
