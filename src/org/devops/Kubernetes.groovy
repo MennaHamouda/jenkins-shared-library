@@ -35,7 +35,7 @@ class Kubernetes implements Serializable {
     }
 
     def deploy(String environment, String bastionIp, String masterIp) {
-        steps.withCredentials([file(credentialsId: 'ansible-key', variable: 'SSH_KEY')]) {
+        steps.withCredentials([steps.file(credentialsId: 'ansible-key', variable: 'SSH_KEY')]) {
 
             steps.sh """
                 chmod 400 "\$SSH_KEY"
