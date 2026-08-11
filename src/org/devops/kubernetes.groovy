@@ -8,28 +8,30 @@ class Kubernetes implements Serializable {
         this.steps = steps
     }
 
-    def fetchKubeConfig(Map config = [:]) {
-        def jumpHost = config.jumpHost
-        def jumpUser = config.jumpUser
-        def masterHost = config.masterHost
-        def masterUser = config.masterUser
-        def remoteKubeConfigPath = config.remoteKubeConfigPath
-        def localKubeConfigPath = config.localKubeConfigPath
+    def fetchArtifact(String projectName, String targetDir = 'ansible/inventory') {
+        steps.sh "echo 'Fetching archived inventory from upstream job: ${projectName}...'"
+        steps.copyArtifacts(
+            projectName: projectName,
+            selector: steps.lastSuccessful(),
+            filter: 'inventory.ini',
+            target: targetDir,
+            flatten: true
+        )
 
-        steps.sh """
-            mkdir -p \"${steps.env.WORKSPACE}/.ssh\"
-            mkdir -p \"${steps.env.WORKSPACE}/.kube\"
-            cp \"\$SSH_KEY\" \"${steps.env.WORKSPACE}/.ssh/kube-ssh-key.pem\"
-            chmod 600 \"${steps.env.WORKSPACE}/.ssh/kube-ssh-key.pem\"
+        def bastionIp = steps.sh(
+            script: "awk '/\\[bastion\\]/{found=1;next} found && /ansible_host=/{print; exit}' ${targetDir}/inventory.ini | grep -oP 'ansible_host=\\K[^ ]+'",
+            returnStdout: true
+        ).trim()
 
-            ssh -o StrictHostKeyChecking=no -i \"${steps.env.WORKSPACE}/.ssh/kube-ssh-key.pem\" \
-                -J \"${jumpUser}@${jumpHost}\" \
-                \"${masterUser}@${masterHost}\" \
-                cat \"${remoteKubeConfigPath}\" > \"${localKubeConfigPath}\"
+        def masterIp = steps.sh(
+            script: "awk '/\\[master\\]/{found=1;next} found && /ansible_host=/{print; exit}' ${targetDir}/inventory.ini | grep -oP 'ansible_host=\\K[^ ]+'",
+            returnStdout: true
+        ).trim()
 
-            chmod 600 \"${localKubeConfigPath}\"
-            rm -f \"${steps.env.WORKSPACE}/.ssh/kube-ssh-key.pem\"
-        """
+        steps.sh "echo 'Bastion IP: ${bastionIp}'"
+        steps.sh "echo 'Master IP: ${masterIp}'"
+
+        return [bastionIp: bastionIp, masterIp: masterIp]
     }
 
     def diff(String environment) {
@@ -40,20 +42,31 @@ class Kubernetes implements Serializable {
 
     }
 
-    def deploy(String environment) {
+    def deploy(String environment, String bastionIp, String masterIp) {
+        steps.withCredentials([steps.sshUserPrivateKey(credentialsId: 'ansible-key', keyFileVariable: 'SSH_KEY')]) {
 
-        steps.sh """
-            kubectl apply -k manifest-kustomize/overlays/${environment}
-        """
+            steps.sh """
+                chmod 400 "\$SSH_KEY"
 
-    }
+                ssh -f -N -L 6443:${masterIp}:6443 -o StrictHostKeyChecking=no -i "\$SSH_KEY" ubuntu@${bastionIp}
 
-    def getPods(String environment) {
+                ssh -o StrictHostKeyChecking=no -i "\$SSH_KEY" \
+                    -o ProxyCommand="ssh -o StrictHostKeyChecking=no -i \"\$SSH_KEY\" -W %h:%p ubuntu@${bastionIp}" \
+                    ubuntu@${masterIp} \
+                    "cat ~/.kube/config 2>/dev/null || sudo cat /etc/kubernetes/admin.conf" > kubeconfig.tmp
 
-        steps.sh """
-            kubectl get pods -n ${environment}
-        """
+                chmod 600 kubeconfig.tmp
 
+                KUBECONFIG=kubeconfig.tmp kubectl apply -k manifest-kustomize/overlays/${environment} --server=https://127.0.0.1:6443 --insecure-skip-tls-verify
+
+                KUBECONFIG=kubeconfig.tmp kubectl get pods -n ${environment}
+
+                rm -f kubeconfig.tmp
+                pkill -f 'ssh -f -N -L 6443:${masterIp}' || true
+
+            """
+
+        }
     }
 
 }

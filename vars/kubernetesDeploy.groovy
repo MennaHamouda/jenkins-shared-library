@@ -4,13 +4,9 @@ def call() {
 
     Kubernetes kubernetes = new Kubernetes(this)
 
-    withCredentials([
-        file(
-            credentialsId: 'kubeconfig',
-            variable: 'KUBECONFIG'
-        )
-    ]) {
 
+        def envVars = kubernetes.fetchArtifact('weather-app/infrastructure' , 'manifest-kustomize')
+       
         def environment
 
         if (env.BRANCH_NAME == 'dev') {
@@ -29,8 +25,6 @@ def call() {
 
         kubernetes.diff(environment)
 
-        kubernetes.deploy(environment)
-
-        kubernetes.getPods(environment)
+        kubernetes.deploy(environment, envVars.bastionIp, envVars.masterIp)
+    
     }
-}
