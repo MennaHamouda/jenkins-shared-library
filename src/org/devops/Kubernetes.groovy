@@ -65,6 +65,20 @@ class Kubernetes implements Serializable {
                 \$KUBECTL apply -k manifest-kustomize/overlays/${environment}
                 \$KUBECTL get pods -n ${environment}
 
+                INGRESS_HOST=\$($KUBECTL get ingress -n ${environment} -o jsonpath='{.items[0].spec.rules[0].host}' 2>/dev/null || echo "dev.weather-app.example.com")
+
+                echo ""
+                echo "=================================================================="
+                echo "🚀 APPLICATION DEPLOYED SUCCESSFULLY"
+                echo "Environment : ${environment}"
+                echo "Application URL: http://\${INGRESS_HOST}"
+                echo "Bastion IP     : ${bastionIp}"
+                echo ""
+                echo "To access in browser, add this line to your /etc/hosts file:"
+                echo "${bastionIp}  \${INGRESS_HOST}"
+                echo "=================================================================="
+                echo ""
+
                 rm -f kubeconfig.tmp
                 pkill -f '6443:' || true
             """
