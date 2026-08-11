@@ -10,14 +10,15 @@ class Ansible implements Serializable {
 
     def configure() {
         steps.sh '''
-        
-
-            chmod 400 terraform/weather-key.pem
+            mkdir -p "$HOME/.ssh"
+            cp "$SSH_KEY" "$HOME/.ssh/ansible-key.pem"
+            chmod 600 "$HOME/.ssh/ansible-key.pem"
 
             ansible-playbook \
                 -i ansible/inventory/inventory.ini \
-                --private-key terraform/weather-key.pem \
                 ansible/playbook.yml
+
+            rm -f "$HOME/.ssh/ansible-key.pem"
         '''
     }
 }
