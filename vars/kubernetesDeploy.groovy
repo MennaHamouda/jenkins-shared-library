@@ -4,27 +4,17 @@ def call() {
 
     Kubernetes kubernetes = new Kubernetes(this)
 
-
-        def envVars = kubernetes.fetchArtifact('weather-app/infrastructure' , 'manifest-kustomize')
+    def envVars = kubernetes.fetchArtifact('weather-app/infrastructure', 'manifest-kustomize')
        
-        def environment
+    def environment
 
-        if (env.BRANCH_NAME == 'dev') {
-
-            environment = 'dev'
-
-        } else if (env.BRANCH_NAME == 'main') {
-
-            environment = 'prod'
-
-        } else {
-
-            error "Unsupported branch: ${env.BRANCH_NAME}"
-
-        }
-
-        kubernetes.diff(environment)
-
-        kubernetes.deploy(environment, envVars.bastionIp, envVars.masterIp)
-    
+    if (env.BRANCH_NAME == 'dev') {
+        environment = 'dev'
+    } else if (env.BRANCH_NAME == 'main') {
+        environment = 'prod'
+    } else {
+        error "Unsupported branch: ${env.BRANCH_NAME}"
     }
+
+    kubernetes.deploy(environment, envVars.bastionIp, envVars.masterIp)
+}

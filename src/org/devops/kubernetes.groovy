@@ -8,7 +8,7 @@ class Kubernetes implements Serializable {
         this.steps = steps
     }
 
-    def fetchArtifact(String projectName, String targetDir = 'ansible/inventory') {
+    def fetchArtifact(String projectName, String targetDir = 'manifest-kustomize') {
         steps.sh "echo 'Fetching archived inventory from upstream job: ${projectName}...'"
         steps.copyArtifacts(
             projectName: projectName,
@@ -34,14 +34,6 @@ class Kubernetes implements Serializable {
         return [bastionIp: bastionIp, masterIp: masterIp]
     }
 
-    def diff(String environment) {
-
-        steps.sh """
-            kubectl diff -k manifest-kustomize/overlays/${environment} || true
-        """
-
-    }
-
     def deploy(String environment, String bastionIp, String masterIp) {
         steps.withCredentials([steps.sshUserPrivateKey(credentialsId: 'ansible-key', keyFileVariable: 'SSH_KEY')]) {
 
@@ -57,13 +49,15 @@ class Kubernetes implements Serializable {
 
                 chmod 600 kubeconfig.tmp
 
-                KUBECONFIG=kubeconfig.tmp kubectl apply -k manifest-kustomize/overlays/${environment} --server=https://127.0.0.1:6443 --insecure-skip-tls-verify
+                export KUBECONFIG=kubeconfig.tmp
+                KUBECTL="kubectl --server=https://127.0.0.1:6443 --insecure-skip-tls-verify"
 
-                KUBECONFIG=kubeconfig.tmp kubectl get pods -n ${environment}
+                \$KUBECTL diff -k manifest-kustomize/overlays/${environment} || true
+                \$KUBECTL apply -k manifest-kustomize/overlays/${environment}
+                \$KUBECTL get pods -n ${environment}
 
                 rm -f kubeconfig.tmp
                 pkill -f 'ssh -f -N -L 6443:${masterIp}' || true
-
             """
 
         }
